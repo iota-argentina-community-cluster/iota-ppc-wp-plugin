@@ -6,7 +6,7 @@ You can chose whether to wait for transactions to be confirmed or not in order t
 
 # Installation
 
-1. Clone this repository or download it as zip. If you do the later, rename the folder to **iota-ppc-wp-plugin**. 
+1. Clone this repository or download it as zip. If you do the latter, rename the folder to **iota-ppc-wp-plugin**. 
 2. Upload the folder to your wp-content/plugins Wordpress directory
 3. Head to Plugins section on your Dashboard and activate the Plugin
 4. Go to IOTA PPC Configuration page and enter a Node (you can use one from [iota.dance](https://iota.dance))
