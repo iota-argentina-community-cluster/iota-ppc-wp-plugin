@@ -159,6 +159,7 @@ add_filter( 'the_content', function ($content) {
     
     ob_start();
     ?>
+    <div>
     <div id="payUsingIOTA_loading" class="clearfix" style="text-align:center;">
         <div class="spinner"></div>
     </div>
@@ -183,7 +184,8 @@ add_filter( 'the_content', function ($content) {
         <div id="payUsingIOTA_INFO" class="clearfix">
             <strong>Get full access to this note by paying <?php echo $amount_formated; ?></strong><br>
             <span>The QR contents sensitive information, don't alter it.</span><br>
-            <a href="iota://<?php echo payUsingIOTA_address; ?>/?amount=<?php echo $amount; ?>&message={"postId":<?php echo $post->ID; ?>,"code":"<?php echo $sha256; ?>"}" id="iota-deep-link">Open with wallet</a><br>
+            <a href="iota://<?php echo payUsingIOTA_address; ?>/?amount=<?php echo $amount; ?>&message={"postId":<?php echo $post->ID; ?>,"code":"<?php echo $sha256; ?>"}" id="iota-deep-link">Open with Trinity Wallet</a><br>
+            <small>(Deep links must be enabled)</small>
         </div>
         <div id="payUsingIOTA_VerificationArea" class="clearfix">
             <button class="button button-large">
