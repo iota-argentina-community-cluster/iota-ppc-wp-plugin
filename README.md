@@ -30,7 +30,8 @@ Once the payment is sent, users can click on "Verify Payment" and they should be
 
 1. Issuing a fake transaction is easy on IOTA so, if you want to be 100% sure about the payment of a given content it might be a good idea to wait for the transaction to be confirmed (this can be done at your IOTA PPC configuration page)
 2. At the moment of this release Deep Links are not supported in all Trinity versions (they should work on Android and Iphone last releases)
-3. Feel free to style the components at index.php to match your design. Again, this is just a PoC and we hope the community help us to improve it. 
+3. We know, lots of globals and data/view mixed. This is kind of the Wordpress way but we will improve that soon. 
+4. Feel free to style the components at index.php to match your design. Again, this is just a PoC and we hope the community help us to improve it. 
 
 
 
