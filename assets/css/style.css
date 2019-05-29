@@ -1,0 +1,53 @@
+#payUsingIOTA_restrictedArea {
+    width:100%;
+    border: 1px solid rgba(225,225,225,1);
+    display:none;
+    padding: 3px 0px 18px 0px;
+}
+
+#payUsingIOTA_QR {
+    width:35%;
+    float:left;
+}
+
+#payUsingIOTA_INFO,#payUsingIOTA_VerificationArea {
+    width:65%;
+    float:left;
+    text-align:center;
+    margin-top:25px;
+    margin-bottom:25px;
+}
+
+@media screen and (max-width: 1280px) {
+    #payUsingIOTA_restrictedArea div {
+        width:100% !important;
+    }
+}
+#payUsingIOTA_restrictedArea div {
+    text-align:center;
+}
+
+#payUsingIOTA_loading .spinner {
+    background-size: 16px 16px;
+    opacity: .7;
+    filter: alpha(opacity=70);
+    width: 16px;
+    height: 16px;
+    margin: 0 auto;
+}
+
+#payUsingIOTA_error {
+    display:none;
+}
+
+#payUsingIOTA_QRDATA {
+    display: none;
+}
+
+.payUsingIOTA_QRDATA_SECTOR {
+    margin: 1.5px 0px 1.5px 0px;
+}
+
+.payUsingIOTA_QRDATA_SECTOR label {
+    padding-right: 5px;
+}
