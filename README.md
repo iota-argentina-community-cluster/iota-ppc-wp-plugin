@@ -33,6 +33,8 @@ Once the payment is sent, users can click on "Verify Payment" and they should be
 3. We know, lots of globals and data/view mixed. This is kind of the Wordpress way but we will improve that soon. 
 4. Feel free to style the components at index.php to match your design. Again, this is just a PoC and we hope the community help us to improve it. 
 
+# Donate
+**Address:** N9UZLNCGCOIKXCTLLEFVRLFKVO9WIFMEWSFWISMIVRTCMLKEDITNQ9P9MYVSMXXXTKUJHJXPKOLBY99VCJJRRWCTCC
 
 
 
