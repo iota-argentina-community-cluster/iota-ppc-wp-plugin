@@ -1,7 +1,7 @@
 <?php
 /**
 * Plugin Name: IOTA Pay per Content
-* Plugin URI: http://www.iotaargentina.org/
+* Plugin URI: https://github.com/iota-argentina-community-cluster/iota-ppc-wp-plugin/
 * Description: Allow IOTA Payments to buy access to posts. 
 * Version: 1.0
 * Author: IOTA Argentina Community Cluster
