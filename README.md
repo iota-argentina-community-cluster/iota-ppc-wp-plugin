@@ -1,5 +1,5 @@
 # IOTA Pay Per Content Wordpress Plugin
-We are realeasing this Wordpress Plugin developed by the [IOTA Argentina Community Cluster](http://iotaargentina.org) to allow IOTA payments on certain posts using IOTA. 
+We are realeasing this Wordpress Plugin developed by the [IOTA Argentina Community Cluster](http://iotaargentina.org) to allow payments on certain posts using IOTA. 
 You can chose whether to wait for transactions to be confirmed or not in order to grant access to contents.
 
 **IMPORTANT:** this is a work in progress and we encourage the community to help us improving the concept. Feel free to submit issues or pull requests if you have tested the code proposed. 
