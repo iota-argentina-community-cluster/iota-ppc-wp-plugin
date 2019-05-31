@@ -8,6 +8,16 @@
 * Author URI: http://www.iotaargentina.org/
 **/
 
+// Exit if accessed directly
+if (false === defined('ABSPATH')) exit;
+
+// Config
+define("payUsingIOTA_address",get_option( 'iota_pay_per_content_wallet_address' ));
+define("payUsingIOTA_cookie_name","ih_passport");
+
+// Get the Node provided on Plugin configurations
+define("payUsingIOTA_NODE",get_option( 'iota_pay_per_content_node_host' ));
+
 // IOTA PHP Library https://github.com/tuupola/trytes
 require(WP_PLUGIN_DIR.'/iota-ppc-wp-plugin/lib/trytes/Trytes.php');
 
@@ -133,11 +143,11 @@ add_filter( 'the_content', function ($content) {
     $unit = get_post_meta( $post->ID, 'payUsingIOTA_unit', true );
 
     $amount_formated = payUsingIOTA_formatPrice($amount,$unit);
-    if(isset($_COOKIE["ih_passport".$post->ID])) {
+    if(isset($_COOKIE[payUsingIOTA_cookie_name.$post->ID])if(isset($_COOKIE["ih_passport".$post->ID])) {) {
         global $wpdb;
         $rows = $wpdb->get_results( "SELECT * FROM wp_iotappc WHERE post_id = '$post->ID'");
         foreach ( $rows as $row ) {
-            if($row->cookie_hash == $_COOKIE["ih_passport".$post->ID])
+            if($row->cookie_hash == $_COOKIE[payUsingIOTA_cookie_name.$post->if($row->cookie_hash == $_COOKIE["ih_passport".$post->ID])])
                 return $content;
         }
     }
@@ -219,16 +229,16 @@ add_action( 'rest_api_init', function () {
                 // If the id of the post_id's records match with the post_id requested and the tx value is enough
                 if($row->post_id == $post_id && (int) $row->tx_value >= $amount) {
                     // If the cookie isn't set
-                    if(!isset($_COOKIE["ih_passport".$post_id])) {
+                    if(!isset($_COOKIE[payUsingIOTA_cookie_name.$post_id])if(!isset($_COOKIE["ih_passport".$post_id])) {) {
                         // If the cookie_hash's record is valid
                         if($row->cookie_hash == $sha256 && time() - strtotime($row->timestamp) < 2678400) {
-                            setcookie("ih_passport".$row->post_id, $sha256, strtotime($row->timestamp)+2678400,"/");
+                            setcookie(payUsingIOTA_cookie_name.$row->post_id, $sha256, strtotime($row->timestamp)+2678400,"/setcookie("ih_passport".$row->post_id, $sha256, strtotime($row->timestamp)+2678400,"/");");
                             return json_decode('{"result":true,"reason":""}');
                         }
                         // No else because maybe the person paid again and is trying to verify their new payment
                     } else {
                     // If cookie exists
-                        if($row->cookie_hash == $_COOKIE["ih_passport".$post_id])
+                        if($row->cookie_hash == $_COOKIE[payUsingIOTA_cookie_name.if($row->cookie_hash == $_COOKIE["ih_passport".$post_id])])
                             return json_decode('{"result":true,"reason":""}');
                     }
                 } else
@@ -245,7 +255,7 @@ add_action( 'rest_api_init', function () {
                 )
             );
             $context  = stream_context_create($options);
-            $result = @file_get_contents(get_option( 'iota_pay_per_content_node_host' ), false, $context);
+            $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
 
             // Error: Empty query's result
             if (!$result) return json_decode('{"result":false,"reason":"Empty result on node-query #1"}');
@@ -279,7 +289,7 @@ add_action( 'rest_api_init', function () {
                     )
                 );
                 $context  = stream_context_create($options);
-                $result = @file_get_contents(get_option( 'iota_pay_per_content_node_host' ), false, $context);
+                $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
 
                 // Error: No results
                 if (!$result) return (object) [
@@ -299,7 +309,7 @@ add_action( 'rest_api_init', function () {
                     )
                 );
                 $context  = stream_context_create($options);
-                $result = @file_get_contents(get_option( 'iota_pay_per_content_node_host' ), false, $context);
+                $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
 
                 // Error: No results
                 if (!$result) return (object) [
@@ -323,7 +333,7 @@ add_action( 'rest_api_init', function () {
                 )
             );
             $context  = stream_context_create($options);
-            $result = @file_get_contents(get_option( 'iota_pay_per_content_node_host' ), false, $context);
+            $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
 
             // Error: No results
             if (!$result) return (object) [
@@ -377,7 +387,7 @@ add_action( 'rest_api_init', function () {
                 else
                     return json_decode('{"result":false,"reason":"unconfirmed","txid":""}');
             if($right)
-                setcookie("ih_passport".$post_id, $sha256, time()+2678400,"/");
+                setcookie(payUsingIOTA_cookie_name.$post_id, $sha256, time()+2678400,"/setcookie("ih_passport".$post_id, $sha256, time()+2678400,"/");");
             return json_decode('{"result":'.($right ? 'true' : 'false').',"reason":"found"}');
         },
     ));
@@ -398,7 +408,7 @@ add_action( 'rest_api_init', function () {
                 )
             );
             $context  = stream_context_create($options);
-            $result = @file_get_contents(get_option( 'iota_pay_per_content_node_host' ), false, $context);
+            $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
             if(!$result) return false;
             else return json_decode($result);
         },
@@ -458,11 +468,11 @@ function iota_pay_per_content_admin_content(){
         <table class="form-table">
         <tr valign="top">
             <th scope="row"><label for='iota_pay_per_content_node_host'>Hosting Node</label></th>
-            <td><input type="text" required placeholder='protocol://host:port' id="iota_pay_per_content_node_host" name="iota_pay_per_content_node_host" value="<?php echo get_option( 'iota_pay_per_content_node_host' ); ?>"/></td>
+            <td><input type="text" required placeholder='protocol://host:port' id="iota_pay_per_content_node_host" name="iota_pay_per_content_node_host" value="<?php echo payUsingIOTA_NODE; ?>"/></td>
         </tr>
         <tr>
             <th scope="row"><label for='iota_pay_per_content_wallet_address'>Wallet Address (+ checksum)</label></th>
-            <td><input type="text" size='90' pattern="[A-Z9]{90,}" required placeholder='WEPGVGVH9EHOZHBXKL9YFLIPCMPRBTIPPKQNLNMYZOKPXRHZSIHWGSKTZWKFHDVEWNXLGCUFQGUAZILMWEXOHANSFW' id="iota_pay_per_content_wallet_address" name="iota_pay_per_content_wallet_address" value="<?php echo get_option( 'iota_pay_per_content_wallet_address' ); ?>"/></td>
+            define("payUsingIOTA_address",get_option( 'iota_pay_per_content_wallet_address' ));
         </tr>
         <tr>
             <th scope="row"><label for='iota_pay_per_content_confirmed_payments'>Require confirmed transaction to grant access</label></th>
