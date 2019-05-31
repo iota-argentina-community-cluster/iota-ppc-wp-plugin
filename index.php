@@ -19,7 +19,7 @@ define("payUsingIOTA_cookie_name","ih_passport");
 define("payUsingIOTA_NODE",get_option( 'iota_pay_per_content_node_host' ));
 
 // IOTA PHP Library https://github.com/tuupola/trytes
-require(WP_PLUGIN_DIR.'/iota-ppc-wp-plugin/lib/trytes/Trytes.php');
+require_once(WP_PLUGIN_DIR.'/iota-ppc-wp-plugin/lib/trytes/Trytes.php');
 
 
 // Localize and register the Javscript script with new data
@@ -484,13 +484,9 @@ function iota_pay_per_content_admin_content(){
     <?php
 }
 
-
-global $iotappc_db_version;
-$iotappc_db_version = '1.0';
-
+// DB Installation
 function iotappc_install() {
 	global $wpdb;
-	global $iotappc_db_version;
 
 	$table_name = $wpdb->prefix . 'iotappc';
 	
@@ -510,7 +506,8 @@ function iotappc_install() {
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $sql );
 
-	add_option( 'iotappc_db_version', $iotappc_db_version );
+    // Plugin DB Version
+	add_option( 'iotappc_db_version', '1.0' );
 }
 
 register_activation_hook( __FILE__, 'iotappc_install' );
