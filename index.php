@@ -141,7 +141,7 @@ add_filter( 'the_content', function ($content) {
     if(!$enabled) return $content;
     $amount = (int) get_post_meta( $post->ID, 'payUsingIOTA_amount', true );
     $unit = get_post_meta( $post->ID, 'payUsingIOTA_unit', true );
-
+    $sha256 = hash("sha256",payUsingIOTA_address.$amount.$post->ID.session_id());
     $amount_formated = payUsingIOTA_formatPrice($amount,$unit);
     if(isset($_COOKIE[payUsingIOTA_cookie_name.$post->ID])) {
         global $wpdb;
@@ -158,7 +158,7 @@ add_filter( 'the_content', function ($content) {
     
     ob_start();
     ?>
-    <div>
+    
     <div id="payUsingIOTA_loading" class="clearfix" style="text-align:center;">
         <div class="spinner"></div>
     </div>
@@ -169,21 +169,25 @@ add_filter( 'the_content', function ($content) {
     <div id="payUsingIOTA_restrictedArea" class="clearfix">
         <div id="payUsingIOTA_QRDATA" style="with:100%;">
             <div class="payUsingIOTA_QRDATA_SECTOR">
-            
-            </div><div class="payUsingIOTA_QRDATA_SECTOR">
+                <label for="address">Address</label><input type="text" id="address" name="address" value="<?php echo payUsingIOTA_address; ?>" /> <button class="payUsingIOTA_QRDATA_COPY">Copy</button>
+            </div>
+            <div class="payUsingIOTA_QRDATA_SECTOR">
                 <label for="amount">Amount (i)</label><input type="text" id="amount" name="amount" value="<?php echo $amount; ?>" /> <button class="payUsingIOTA_QRDATA_COPY">Copy</button>
-            </div><div class="payUsingIOTA_QRDATA_SECTOR">
+            </div>
+            <div class="payUsingIOTA_QRDATA_SECTOR">
                 <label for="message">Message</label><input type="text" id="message" name="message" value='{"postId":<?php echo $post->ID; ?>,"code":"<?php echo $sha256; ?>"}' /> <button class="payUsingIOTA_QRDATA_COPY">Copy</button>
             </div>
         </div>
         <div id="payUsingIOTA_QR">
-        
+            <canvas style="height:auto !important;max-width:100%;" id="payUsingIOTA_QRCanvas" data-address="<?php echo payUsingIOTA_address; ?>" data-price="<?php echo $amount; ?>" data-postId="<?php echo $post->ID; ?>" data-code="<?php echo $sha256; ?>"></canvas>
+            <br>
             <button class="payUsingIOTA_QR_showdata">Show QR Data</button>
         </div>
         <div id="payUsingIOTA_INFO" class="clearfix">
             <strong>Get full access to this note by paying <?php echo $amount_formated; ?></strong><br>
             <span>The QR contents sensitive information, don't alter it.</span><br>
-        
+            <a class="button" href="iota://<?php echo payUsingIOTA_address; ?>/?amount=<?php echo $amount; ?>&message={"postId":<?php echo $post->ID; ?>,"code":"<?php echo $sha256; ?>"}" id="iota-deep-link">Open with Trinity Wallet</a>
+            <br>
             <small>(Deep links must be enabled)</small>
         </div>
         <div id="payUsingIOTA_VerificationArea" class="clearfix">
@@ -209,7 +213,7 @@ add_action( 'rest_api_init', function () {
         'methods' => 'POST',
         'callback' => function ($data) {
             ini_set('default_socket_timeout', 900); // 900 Seconds = 15 Minutes
-        
+            $address = payUsingIOTA_address;
             $post_id = $data["postId"];
             $amount = (int) get_post_meta( $post_id, 'payUsingIOTA_amount', true );
             $sha256 = hash("sha256",$address.$amount.$post_id.session_id());
