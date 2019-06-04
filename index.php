@@ -24,7 +24,7 @@ require_once(WP_PLUGIN_DIR.'/iota-ppc-wp-plugin/lib/trytes/Trytes.php');
 
 // Localize and register the Javscript script with new data
 wp_register_script( 'payUsingIOTA', plugin_dir_url( __FILE__ ) . '/assets/js/script.js', array("jquery") );
-wp_localize_script( 'payUsingIOTA', 'WPURLS', array( 'siteurl' => get_site_url() ));
+wp_localize_script( 'payUsingIOTA', 'WPURLS', array( 'siteurl' => get_site_url(), 'adminurl' => admin_url() ));
 add_action('wp_enqueue_scripts', function() {
     wp_enqueue_script( 'QRCode', plugin_dir_url( __FILE__ ) . '/assets/js/qrcode.web.min.js');
     wp_enqueue_script( 'payUsingIOTA' );

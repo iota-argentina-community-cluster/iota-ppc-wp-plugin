@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
         $("#payUsingIOTA_QRDATA").slideToggle();
         $(this).slideToggle();
     });
-    $("#payUsingIOTA_loading .spinner").css("background","url('"+WPURLS.siteurl+"/wp-admin/images/wpspin_light.gif') no-repeat");
+    $("#payUsingIOTA_loading .spinner").css("background","url('"+WPURLS.adminurl+"/images/wpspin_light.gif') no-repeat");
     $.ajax({
         url: WPURLS.siteurl+'/wp-json/payUsingIOTA/v1/getNodeInfo',
         cache: false,
