@@ -158,13 +158,11 @@ add_filter( 'the_content', function ($content) {
     
     ob_start();
     ?>
-    
     <div id="payUsingIOTA_loading" class="clearfix" style="text-align:center;">
         <div class="spinner"></div>
     </div>
     <div id="payUsingIOTA_error" class="clearfix" style="text-align:center;">
-        <strong>Sorry! Our systems aren't working, QR Payments are not available.<br>
-        Please try later.</strong>
+        <strong>Sorry! Our systems aren't working, QR Payments are not available.<br>Please try later.</strong>
     </div>
     <div id="payUsingIOTA_restrictedArea" class="clearfix">
         <div id="payUsingIOTA_QRDATA" style="with:100%;">
@@ -195,8 +193,8 @@ add_filter( 'the_content', function ($content) {
                 VERIFY PAYMENT
             </button>
             <div id="payUsingIOTA_loading" class="clearfix" style="text-align:center;">
-        <div class="spinner"></div>
-    </div>
+                <div class="spinner"></div>
+            </div>
             <div id="payUsingIOTA_feedback"></div>
         </div>
         <div class="clear"></div>
@@ -206,6 +204,21 @@ add_filter( 'the_content', function ($content) {
 
 });
 
+
+// Query node
+function query_node($body) {
+    return wp_remote_post( payUsingIOTA_NODE, array(
+        'method' => 'POST',
+        'timeout' => 1200,
+        'redirection' => 1,
+        'httpversion' => '1.0',
+        'blocking' => true,
+        'headers' => array('Content-type' => 'application/x-www-form-urlencoded','X-IOTA-API-Version' => '1'),
+        'body' => $body,
+        'cookies' => array()
+        )
+    );
+}
 
 // WP API endpoint creation enabling the payment status return
 add_action( 'rest_api_init', function () {
@@ -249,22 +262,21 @@ add_action( 'rest_api_init', function () {
                     array_push($txs_ids_indexadas,$row->tx_id);
 
             // Stored records do not match: Querying for new transactions
-            $options = array(
-                'http' => array(
-                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                                    "X-IOTA-API-Version: '1'\r\n",
-                    'method'  => 'POST',
-                    'content' => '{"command": "findTransactions", "addresses": ["'.substr($address,0,81).'"]}',
-                    'timeout' => 1200
-                )
-            );
-            $context  = stream_context_create($options);
-            $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
+            $response = query_node('{"command": "findTransactions", "addresses": ["'.substr($address,0,81).'"]}');
+                
+            // Error
+            if ( is_wp_error( $response ) )
+               return (object) [
+                'result' => false,
+                'reason' => $response->get_error_message()
+                ];
+                
+            $response = json_decode($response['body']);
 
             // Error: Empty query's result
-            if (!$result) return json_decode('{"result":false,"reason":"Empty result on node-query #1"}');
+            if (!$response) return json_decode('{"result":false,"reason":"Empty result on node-query #1"}');
 
-            $txs_ids = json_decode($result)->hashes;
+            $txs_ids = $response->hashes;
 
             // 0 transaction to analyze
             if(!count($txs_ids)) return json_decode('{"result":false,"reason":"0 transactions to analyze"}');
@@ -283,70 +295,64 @@ add_action( 'rest_api_init', function () {
             if ( $iota_pay_per_content_confirmed_payments ) {
                 
                 // Getting latest milestone
-                $options = array(
-                    'http' => array(
-                        'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                                        "X-IOTA-API-Version: '1'\r\n",
-                        'method'  => 'POST',
-                        'content' => '{"command": "getNodeInfo"}',
-                        'timeout' => 1200
-                    )
-                );
-                $context  = stream_context_create($options);
-                $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
+                $response = query_node('{"command": "getNodeInfo"}');
+                
+                // Error
+                if ( is_wp_error( $response ) )
+                   return (object) [
+                    'result' => false,
+                    'reason' => $response->get_error_message()
+                    ];
+                    
+                $response = json_decode($response['body']);
 
                 // Error: No results
-                if (!$result) return (object) [
+                if (!$response) return (object) [
                     'result' => false,
-                    'reason' => 'Empty result on node-query #2',
-                    'txs_ids_noConsultadas' => $txs_ids_noConsultadas
+                    'reason' => 'Empty result on node-query #2'
                 ];
                 
                 // Checking for latest inclution state
-                $options = array(
-                    'http' => array(
-                        'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                                        "X-IOTA-API-Version: '1'\r\n",
-                        'method'  => 'POST',
-                        'content' => '{"command": "getInclusionStates","transactions": ["'.implode('","',$txs_ids_noConsultadas).'"],"tips": ["'.json_decode($result)->latestMilestone.'"]}',
-                        'timeout' => 1200
-                    )
-                );
-                $context  = stream_context_create($options);
-                $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
+                $response = query_node('{"command": "getInclusionStates","transactions": ["'.implode('","',$txs_ids_noConsultadas).'"],"tips": ["'.json_decode($response)->latestMilestone.'"]}');
+
+                // Error
+                if ( is_wp_error( $response ) )
+                   return (object) [
+                    'result' => false,
+                    'reason' => $response->get_error_message()
+                    ];
+                
+                $response = json_decode($response['body']);
 
                 // Error: No results
-                if (!$result) return (object) [
+                if (!$response) return (object) [
                     'result' => false,
-                    'reason' => 'Empty result on node-query #2',
-                    'txs_ids_noConsultadas' => $txs_ids_noConsultadas
+                    'reason' => 'Empty result on node-query #2'
                 ];
 
                 $confirmeds = [];
-                foreach(json_decode($result)->states as $index => $state) if($state) $confirmeds[] = $txs_ids_noConsultadas[$index];
+                foreach(json_decode($response)->states as $index => $state) if($state) $confirmeds[] = $txs_ids_noConsultadas[$index];
             }
 
             // Getting new records
-            $options = array(
-                'http' => array(
-                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                                    "X-IOTA-API-Version: '1'\r\n",
-                    'method'  => 'POST',
-                    'content' => '{"command": "getTrytes", "hashes": ["'.implode('","',$txs_ids_noConsultadas).'"]}',
-                    'timeout' => 1200
-                )
-            );
-            $context  = stream_context_create($options);
-            $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
+            $response = query_node('{"command": "getTrytes", "hashes": ["'.implode('","',$txs_ids_noConsultadas).'"]}');
+                
+            // Error
+            if ( is_wp_error( $response ) )
+               return (object) [
+                'result' => false,
+                'reason' => $response->get_error_message()
+                ];
+                
+            $response = json_decode($response['body']);
 
             // Error: No results
-            if (!$result) return (object) [
+            if (!$response) return (object) [
                 'result' => false,
-                'reason' => 'Empty result on node-query #2',
-                'txs_ids_noConsultadas' => $txs_ids_noConsultadas
+                'reason' => 'Empty result on node-query #2'
             ];
 
-            $txs_trytes = json_decode($result)->trytes; //array of transactions on trytes format
+            $txs_trytes = $response->trytes; //array of transactions on trytes format
             $txs_data = [];
             foreach ($txs_trytes as $tx_trytes)
                 $txs_data[] = getDataFromTrytes(($tx_trytes));
@@ -402,19 +408,14 @@ add_action( 'rest_api_init', function () {
         'methods' => 'GET',
         'callback' => function ($data) {
             ini_set('default_socket_timeout', 900); // 900 Seconds = 15 Minutes
-            $options = array(
-                'http' => array(
-                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                                    "X-IOTA-API-Version: '1'\r\n",
-                    'method'  => 'POST',
-                    'content' => '{"command": "getNodeInfo"}',
-                    'timeout' => 1200
-                )
-            );
-            $context  = stream_context_create($options);
-            $result = @file_get_contents(payUsingIOTA_NODE, false, $context);
-            if(!$result) return false;
-            else return json_decode($result);
+            $response = query_node('{"command": "getNodeInfo"}');
+                
+            // Error
+            if ( is_wp_error( $response ) )
+               return false;
+            $response = json_decode($response['body']);
+            if(!$response) return false;
+            else return $response;
         },
     ));
 });
@@ -513,10 +514,16 @@ function iotappc_install() {
     // Plugin DB Version
 	add_option( 'iotappc_db_version', '1.0' );
 }
-
 register_activation_hook( __FILE__, 'iotappc_install' );
 
-// Extracted from https://github.com/crypto5000/iota.lib.php/blob/master/library.php
+/* =============================================================================================================================
+== Functions extracted from https://github.com/crypto5000/iota.lib.php/blob/master/library.php =================================
+==============================================================================================================================*/
+
+/* Function to transform trytes to transaction data (address, value)
+*  Takes a single tryte as input
+*  Returns either "ERROR" or an array with address, value, etc.
+*/
 function getDataFromTrytes($trytes) {
     
     // validate trytes
@@ -553,4 +560,100 @@ function getDataFromTrytes($trytes) {
 
     return $outputArray;
 
+}
+
+
+// helper function for getDataFromTrytes
+function value($trits) {
+
+    $returnValue = 0;
+    for ( $i = count($trits); $i-- > 0; ) {
+        $returnValue = $returnValue * 3 + $trits[ $i ];
+    }
+
+    return $returnValue;
+}
+
+// helper function for getDataFromTrytes
+function trits($input) {
+    
+    $trits = [];
+
+    // All possible tryte values
+    $trytesAlphabet = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    // map of all trits representations
+    $trytesTrits = [
+    [ 0,  0,  0],
+    [ 1,  0,  0],
+    [-1,  1,  0],
+    [ 0,  1,  0],
+    [ 1,  1,  0],
+    [-1, -1,  1],
+    [ 0, -1,  1],
+    [ 1, -1,  1],
+    [-1,  0,  1],
+    [ 0,  0,  1],
+    [ 1,  0,  1],
+    [-1,  1,  1],
+    [ 0,  1,  1],
+    [ 1,  1,  1],
+    [-1, -1, -1],
+    [ 0, -1, -1],
+    [ 1, -1, -1],
+    [-1,  0, -1],
+    [ 0,  0, -1],
+    [ 1,  0, -1],
+    [-1,  1, -1],
+    [ 0,  1, -1],
+    [ 1,  1, -1],
+    [-1, -1,  0],
+    [ 0, -1,  0],
+    [ 1, -1,  0],
+    [-1,  0,  0]
+    ];
+
+    // check if tryte is number or string
+    if (is_numeric($input)) {
+
+        $absoluteValue = $input;
+
+        if ($input < 0) {
+                $absoluteValue = -$input;
+        }
+
+        while ($absoluteValue > 0) {
+
+            $remainder = $absoluteValue % 3;
+            $absoluteValue = floor($absoluteValue / 3);
+
+            if ($remainder > 1) {
+                $remainder = -1;
+                $absoluteValue++;
+            }
+
+            $tritLength = count($trits);
+            $trits[$tritLength] = $remainder;
+        }
+        if ($input < 0) {
+
+            for ($i = 0; $i < count($trits); $i++) {
+
+                $trits[$i] = -$trits[$i];
+            }
+        }
+    } else {
+
+        for ($i = 0; $i < strlen($input); $i++) {
+
+            $inputVal = $input[$i];
+            $index = strpos($trytesAlphabet,$inputVal);
+
+            $trits[$i * 3] = $trytesTrits[$index][0];
+            $trits[$i * 3 + 1] = $trytesTrits[$index][1];
+            $trits[$i * 3 + 2] = $trytesTrits[$index][2];
+        }
+    }
+
+    return $trits;
 }
